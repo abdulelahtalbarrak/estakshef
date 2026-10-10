@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شخصية | استكشف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">استكشف<span>.</span></a>
+    <div class="nav-links">
+      <a href="index.html">الرئيسية</a>
+      <a href="quiz.html">الاختبار</a>
+      <a href="traits.html">اختر صفاتك</a>
+      <a href="smart-match.html">اكتشف بالذكاء الاصطناعي</a>
+      <a href="explore.html">تصفّح الشخصيات</a>
+    </div>
+  </div>
+</nav>
+<main>
+<div class="detail-wrap" id="detail-root">
+  <!-- يُعبّى بالجافاسكربت -->
+</div>
+</main>
+<footer>
+  <p>مشروع تخرج — موقع يعزز الثقافة التاريخية عبر مطابقتك بشخصية تناسب اهتماماتك، بالذكاء الاصطناعي.</p>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/quiz-logic.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  const figure = id ? getFigure(id) : null;
+  const root = document.getElementById('detail-root');
+
+  if (!figure) {
+    root.innerHTML = `
+      <a href="explore.html" class="back-link">← رجوع لكل الشخصيات</a>
+      <h1>الشخصية غير موجودة</h1>
+    `;
+  } else {
+    document.title = `${figure.name} | استكشف`;
+    const description = CATEGORY_DESCRIPTIONS[figure.category] || '';
+    root.innerHTML = `
+      <a href="explore.html" class="back-link">← رجوع لكل الشخصيات</a>
+      <h1>${figure.name}</h1>
+      <div class="meta">${figure.category} · ${figure.era}</div>
+      <p>${figure.bio}</p>
+      <div class="match-topic">
+        <div class="label">🏛️ التصنيف</div>
+        ${description}
+      </div>
+      <div class="results-actions">
+        <a href="quiz.html" class="btn btn-primary">جرّب الاختبار</a>
+      </div>
+    `;
+  }
+</script>
+</body>
+</html>

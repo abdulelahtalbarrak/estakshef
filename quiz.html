@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الاختبار | استكشف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">استكشف<span>.</span></a>
+    <div class="nav-links">
+      <a href="index.html">الرئيسية</a>
+      <a href="quiz.html">الاختبار</a>
+      <a href="traits.html">اختر صفاتك</a>
+      <a href="smart-match.html">اكتشف بالذكاء الاصطناعي</a>
+      <a href="explore.html">تصفّح الشخصيات</a>
+    </div>
+  </div>
+</nav>
+<main>
+<div class="quiz-wrap">
+  <div class="quiz-header">
+    <h1>عشرة مواقف... شخصية وحدة تشبهك</h1>
+    <p>مواقف يومية ومهنية تختبر واقعيتك وبراغماتيتك، اختر التصرف الأقرب لك في كل موقف.</p>
+  </div>
+
+  <form id="quiz-form">
+    <div id="questions-container"></div>
+    <div class="submit-row">
+      <button type="submit" class="btn btn-primary">اكشف شخصيتي التاريخية</button>
+    </div>
+  </form>
+</div>
+</main>
+<footer>
+  <p>مشروع تخرج — موقع يعزز الثقافة التاريخية عبر مطابقتك بشخصية تناسب اهتماماتك، بالذكاء الاصطناعي.</p>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/quiz-logic.js"></script>
+<script>
+  const container = document.getElementById('questions-container');
+  QUESTIONS.forEach((q, qi) => {
+    const section = document.createElement('div');
+    section.className = 'form-section';
+
+    const h2 = document.createElement('h2');
+    h2.textContent = `${qi + 1}. ${q.text}`;
+    section.appendChild(h2);
+
+    const optionList = document.createElement('div');
+    optionList.className = 'option-list';
+
+    q.options.forEach((opt, oi) => {
+      const label = document.createElement('label');
+      label.className = 'option-row';
+
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = q.id;
+      input.value = oi;
+      input.required = true;
+
+      const span = document.createElement('span');
+      span.textContent = opt.text;
+
+      label.appendChild(input);
+      label.appendChild(span);
+      optionList.appendChild(label);
+    });
+
+    section.appendChild(optionList);
+    container.appendChild(section);
+  });
+
+  document.getElementById('quiz-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const answerIndexes = QUESTIONS.map((q) => {
+      const checked = document.querySelector(`input[name="${q.id}"]:checked`);
+      return checked ? Number(checked.value) : null;
+    });
+
+    if (answerIndexes.some((v) => v === null)) return; // required يمنع هذا أصلاً
+
+    const { winner, scores } = calculateResult(answerIndexes);
+    const figure = getRandomFigureByCategory(winner);
+
+    sessionStorage.setItem(
+      'quiz_result',
+      JSON.stringify({ source: 'quiz', winner, scores, figure })
+    );
+    window.location.href = 'result.html';
+  });
+</script>
+</body>
+</html>

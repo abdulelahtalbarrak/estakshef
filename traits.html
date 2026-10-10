@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختر صفاتك | استكشف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">استكشف<span>.</span></a>
+    <div class="nav-links">
+      <a href="index.html">الرئيسية</a>
+      <a href="quiz.html">الاختبار</a>
+      <a href="traits.html">اختر صفاتك</a>
+      <a href="smart-match.html">اكتشف بالذكاء الاصطناعي</a>
+      <a href="explore.html">تصفّح الشخصيات</a>
+    </div>
+  </div>
+</nav>
+<main>
+<div class="quiz-wrap">
+  <div class="quiz-header">
+    <h1>اختر صفاتك واهتماماتك</h1>
+    <p>حدد كل الصفات اللي تشوف إنها تشبهك، وكل ما اخترت أكثر كانت المطابقة أدق.</p>
+  </div>
+
+  <form id="traits-form">
+    <div id="traits-container"></div>
+    <div class="submit-row">
+      <p class="form-error" id="form-error" style="display:none;">اختر صفة واحدة على الأقل قبل المتابعة</p>
+      <button type="submit" class="btn btn-primary">اكشف شخصيتي التاريخية</button>
+    </div>
+  </form>
+</div>
+</main>
+<footer>
+  <p>مشروع تخرج — موقع يعزز الثقافة التاريخية عبر مطابقتك بشخصية تناسب اهتماماتك، بالذكاء الاصطناعي.</p>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/quiz-logic.js"></script>
+<script>
+  const traitsByCategory = {};
+  TRAITS.forEach((t) => {
+    if (!traitsByCategory[t.category]) traitsByCategory[t.category] = [];
+    traitsByCategory[t.category].push(t.name);
+  });
+
+  const container = document.getElementById('traits-container');
+  Object.entries(traitsByCategory).forEach(([category, names]) => {
+    const section = document.createElement('div');
+    section.className = 'form-section';
+
+    const h2 = document.createElement('h2');
+    h2.textContent = category;
+    section.appendChild(h2);
+
+    const grid = document.createElement('div');
+    grid.className = 'chip-grid';
+
+    names.forEach((name, ni) => {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+
+      const id = `trait-${ni}-${category.replace(/\s+/g, '')}`;
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.name = 'traits';
+      input.value = name;
+      input.id = id;
+
+      const label = document.createElement('label');
+      label.setAttribute('for', id);
+      label.textContent = name;
+
+      chip.appendChild(input);
+      chip.appendChild(label);
+      grid.appendChild(chip);
+    });
+
+    section.appendChild(grid);
+    container.appendChild(section);
+  });
+
+  document.getElementById('traits-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const checked = Array.from(document.querySelectorAll('input[name="traits"]:checked')).map((el) => el.value);
+
+    if (checked.length === 0) {
+      document.getElementById('form-error').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    const { winner, scores } = calculateResultFromTraits(checked);
+    const figure = getRandomFigureByCategory(winner);
+
+    sessionStorage.setItem(
+      'quiz_result',
+      JSON.stringify({ source: 'traits', winner, scores, figure })
+    );
+    window.location.href = 'result.html';
+  });
+</script>
+</body>
+</html>

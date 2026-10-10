@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تصفّح الشخصيات | استكشف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">استكشف<span>.</span></a>
+    <div class="nav-links">
+      <a href="index.html">الرئيسية</a>
+      <a href="quiz.html">الاختبار</a>
+      <a href="traits.html">اختر صفاتك</a>
+      <a href="smart-match.html">اكتشف بالذكاء الاصطناعي</a>
+      <a href="explore.html">تصفّح الشخصيات</a>
+    </div>
+  </div>
+</nav>
+<main>
+<div class="explore-wrap">
+  <div class="explore-header">
+    <h1>تصفّح كل الشخصيات</h1>
+    <p style="color:var(--text-muted)" id="count-label"></p>
+  </div>
+
+  <form class="filters" id="filter-form">
+    <select name="category" id="category-select">
+      <option value="">كل التصنيفات</option>
+    </select>
+  </form>
+
+  <div class="figures-grid" id="figures-grid"></div>
+</div>
+</main>
+<footer>
+  <p>مشروع تخرج — موقع يعزز الثقافة التاريخية عبر مطابقتك بشخصية تناسب اهتماماتك، بالذكاء الاصطناعي.</p>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/quiz-logic.js"></script>
+<script>
+  const select = document.getElementById('category-select');
+  CATEGORIES.forEach((c) => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    select.appendChild(opt);
+  });
+
+  function getCategoryFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('category') || '';
+  }
+
+  function render() {
+    const categoryFilter = getCategoryFromURL();
+    select.value = categoryFilter;
+
+    const figures = getAllFigures(categoryFilter || null);
+    document.getElementById('count-label').textContent = `${figures.length} شخصية عبر 10 تصنيفات`;
+
+    const grid = document.getElementById('figures-grid');
+    grid.innerHTML = figures
+      .map(
+        (fig) => `
+      <a href="figure.html?id=${fig.id}" class="figure-card">
+        <h3>${fig.name}</h3>
+        <div class="fc-meta">${fig.category} · ${fig.era}</div>
+        <p>${fig.bio}</p>
+      </a>`
+      )
+      .join('');
+  }
+
+  select.addEventListener('change', () => {
+    const params = new URLSearchParams();
+    if (select.value) params.set('category', select.value);
+    window.location.search = params.toString();
+  });
+
+  render();
+</script>
+</body>
+</html>

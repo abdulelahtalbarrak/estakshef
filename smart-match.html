@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اكتشف بالذكاء الاصطناعي | استكشف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .ai-wrap { max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
+  .ai-textarea {
+    width: 100%; min-height: 160px; padding: 16px; border-radius: 14px;
+    border: 1px solid var(--border, #3a3a3a); background: var(--card-bg, #1c1c1c);
+    color: inherit; font-family: inherit; font-size: 1rem; line-height: 1.8; resize: vertical;
+  }
+  .ai-status { margin-top: 18px; text-align: center; color: var(--text-muted); min-height: 24px; font-size: 0.92rem; }
+  .ai-note { color: var(--text-muted); font-size: 0.85rem; margin-top: 10px; line-height: 1.8; }
+  .ai-tech-badge {
+    display:inline-block; background: rgba(212,175,55,0.12); color: var(--gold-soft,#d4af37);
+    font-size:.78rem; padding:4px 12px; border-radius: 999px; margin-top:10px; border:1px solid rgba(212,175,55,.3);
+  }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">استكشف<span>.</span></a>
+    <div class="nav-links">
+      <a href="index.html">الرئيسية</a>
+      <a href="quiz.html">الاختبار</a>
+      <a href="traits.html">اختر صفاتك</a>
+      <a href="smart-match.html">اكتشف بالذكاء الاصطناعي</a>
+      <a href="explore.html">تصفّح الشخصيات</a>
+    </div>
+  </div>
+</nav>
+<main>
+<div class="ai-wrap">
+  <div class="quiz-header">
+    <h1>✨ اكتشف شخصيتك بالذكاء الاصطناعي</h1>
+    <p>اكتب وصفاً حراً عن نفسك — شخصيتك، اهتماماتك، كيف يصفك الناس — ونموذج تصنيف نصوص مدرَّب خصيصاً لهذا المشروع (TF-IDF + Naive Bayes) يحلل كلامك ويطابقك بأقرب شخصية من بين 200 شخصية.</p>
+    <div class="ai-tech-badge">🧠 نموذج مُدرَّب فعلياً على 250 مثالاً عبر 10 تصنيفات — يعمل بالكامل داخل متصفحك، بدون إنترنت وبدون سيرفر</div>
+  </div>
+
+  <form id="ai-form">
+    <textarea
+      id="ai-text"
+      class="ai-textarea"
+      placeholder="مثال: أنا شخص يحب القيادة وتحمل المسؤولية، أتخذ قراراتي بسرعة، وأحب تنظيم الأمور وبناء فرق تعمل بكفاءة..."
+      required
+      minlength="10"
+    ></textarea>
+
+    <div class="submit-row">
+      <button type="submit" class="btn btn-primary" id="ai-submit-btn">اكتشف شخصيتي بالذكاء الاصطناعي</button>
+    </div>
+
+    <div class="ai-status" id="ai-status"></div>
+
+    <p class="ai-note">
+      النموذج مبني على خوارزمية TF-IDF لتحويل النص إلى أرقام، ثم Naive Bayes للتصنيف — نفس التقنيات الأساسية في معالجة اللغة الطبيعية. كلما كتبت وصفاً أطول وأدق، كانت المطابقة أفضل.
+    </p>
+  </form>
+</div>
+</main>
+<footer>
+  <p>مشروع تخرج — موقع يعزز الثقافة التاريخية عبر مطابقتك بشخصية تناسب اهتماماتك، بالذكاء الاصطناعي.</p>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/quiz-logic.js"></script>
+<script src="assets/js/ai-model.js"></script>
+<script>
+  const form = document.getElementById('ai-form');
+  const statusEl = document.getElementById('ai-status');
+  const submitBtn = document.getElementById('ai-submit-btn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = document.getElementById('ai-text').value.trim();
+    if (text.length < 10) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'جارِ التحليل...';
+    statusEl.textContent = 'جارِ تحليل النص بنموذج TF-IDF + Naive Bayes...';
+
+    try {
+      const result = await matchByText(text);
+
+      sessionStorage.setItem(
+        'quiz_result',
+        JSON.stringify({
+          source: 'ai',
+          usedAI: true,
+          figure: result.bestFigure,
+          winner: result.category,
+          categoryConfidence: result.categoryConfidence,
+          alternatives: result.alternatives,
+          topScore: result.bestFigureScore,
+          modelMeta: result.modelMeta,
+        })
+      );
+      window.location.href = 'result.html';
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = 'صار خطأ غير متوقع، حاول مرة ثانية.';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'اكتشف شخصيتي بالذكاء الاصطناعي';
+    }
+  });
+</script>
+</body>
+</html>

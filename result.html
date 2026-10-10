@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نتيجتك | استكشف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .alt-list { display:flex; flex-direction:column; gap:10px; margin-top:18px; max-width:520px; margin-left:auto; margin-right:auto; }
+  .alt-item { display:flex; justify-content:space-between; align-items:center; background: var(--card-bg, #1c1c1c); border-radius: 10px; padding: 10px 16px; }
+  .alt-item .pct { color: var(--gold-soft, #d4af37); font-weight: 700; }
+  .ai-badge { display:inline-block; background: var(--gold-soft,#d4af37); color:#1a1a1a; font-size:.75rem; padding:3px 10px; border-radius: 999px; margin-top:8px; }
+  .fallback-note { color: #e0a0a0; font-size: 0.85rem; margin-top: 10px; }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">استكشف<span>.</span></a>
+    <div class="nav-links">
+      <a href="index.html">الرئيسية</a>
+      <a href="quiz.html">الاختبار</a>
+      <a href="traits.html">اختر صفاتك</a>
+      <a href="smart-match.html">اكتشف بالذكاء الاصطناعي</a>
+      <a href="explore.html">تصفّح الشخصيات</a>
+    </div>
+  </div>
+</nav>
+<main>
+<div class="results-wrap" id="results-root">
+  <!-- يُعبّى بالجافاسكربت -->
+</div>
+</main>
+<footer>
+  <p>مشروع تخرج — موقع يعزز الثقافة التاريخية عبر مطابقتك بشخصية تناسب اهتماماتك، بالذكاء الاصطناعي.</p>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/quiz-logic.js"></script>
+<script>
+  const raw = sessionStorage.getItem('quiz_result');
+  const root = document.getElementById('results-root');
+
+  if (!raw) {
+    root.innerHTML = `
+      <div class="results-header">
+        <h1>ما فيه نتيجة بعد</h1>
+        <p style="color:var(--text-muted)">جرّب الاختبار أو اختر صفاتك أو جرّب المطابقة بالذكاء الاصطناعي أولاً.</p>
+      </div>
+      <div class="results-actions">
+        <a href="quiz.html" class="btn btn-primary">ابدأ الاختبار</a>
+      </div>
+    `;
+  } else {
+    const data = JSON.parse(raw);
+    const { source, winner, figure, scores, usedAI, alternatives, topScore, categoryConfidence } = data;
+
+    const description = CATEGORY_DESCRIPTIONS[winner] || '';
+
+    let headerHTML = `
+      <div class="eyebrow">${source === 'ai' ? 'نتيجة المطابقة بالذكاء الاصطناعي' : 'نتيجة الاختبار'}</div>
+      <h1>أنت من تصنيف</h1>
+      <h2 style="color:var(--gold-soft); font-size:1.6rem; margin-top:-6px;">${winner}</h2>
+      <p style="color:var(--text-muted); max-width:520px; margin:14px auto 0;">${description}</p>
+    `;
+
+    if (source === 'ai') {
+      const simPart = topScore > 0 ? ` · تشابه مع سيرتها ${(topScore * 100).toFixed(1)}%` : '';
+      headerHTML += `<div class="ai-badge">🧠 نموذج TF-IDF + Naive Bayes مدرَّب — ثقة التصنيف ${(categoryConfidence * 100).toFixed(1)}%${simPart}</div>`;
+    }
+
+    let figureHTML = '';
+    if (figure) {
+      figureHTML = `
+        <div class="match-card primary">
+          <div class="match-badge">شخصيتك المطابقة</div>
+          <div class="match-top" style="margin-top:10px;">
+            <div>
+              <h2>${figure.name}</h2>
+              <div class="match-meta">${figure.category} · ${figure.era}</div>
+            </div>
+          </div>
+          <div class="match-body">
+            <p>${figure.bio}</p>
+          </div>
+        </div>
+      `;
+    } else {
+      figureHTML = `<p style="text-align:center; color:#e0a0a0;">تعذر إيجاد شخصية مطابقة.</p>`;
+    }
+
+    let altHTML = '';
+    if (source === 'ai' && alternatives && alternatives.length) {
+      altHTML = `
+        <h3 style="text-align:center; margin-top:36px; color:var(--text-muted); font-size:1rem;">تصنيفات قريبة أخرى احتمل النموذج إنها تناسبك</h3>
+        <div class="alt-list">
+          ${alternatives
+            .map(
+              (a) => `
+            <a href="figure.html?id=${a.figure.id}" class="alt-item" style="text-decoration:none; color:inherit;">
+              <span>${a.figure.name} <span style="color:var(--text-muted); font-size:.85rem;">(${a.figure.category})</span></span>
+              <span class="pct">${(a.score * 100).toFixed(1)}%</span>
+            </a>`
+            )
+            .join('')}
+        </div>
+      `;
+    }
+
+    root.innerHTML = `
+      <div class="results-header">${headerHTML}</div>
+      ${figureHTML}
+      ${altHTML}
+      <div class="results-actions">
+        <a href="${source === 'ai' ? 'smart-match.html' : source === 'traits' ? 'traits.html' : 'quiz.html'}" class="btn btn-ghost">أعد المحاولة</a>
+        <a href="explore.html" class="btn btn-primary">تصفّح كل الشخصيات</a>
+      </div>
+    `;
+  }
+</script>
+</body>
+</html>
